@@ -1,0 +1,1 @@
+let _ = Printf.printf "%s\n" (Name.string_of_name ("a", "b"))
