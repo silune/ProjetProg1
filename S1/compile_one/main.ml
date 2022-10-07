@@ -1,1 +1,0 @@
-Printf.printf "On teste la compilation.\n" 
