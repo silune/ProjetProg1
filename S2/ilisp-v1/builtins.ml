@@ -6,6 +6,7 @@
 open Asyntax
 open Environment
 open Lisp
+open String
 
 let rec length args =
   match args with
@@ -228,6 +229,34 @@ let eval_letstar arg =
     end
   end
 
+(* interpret arithmetics operator *)
+(* interpret (+ arg1 arg2 ...)*)
+let eval_sum arg1 =
+   let rec sum arg =
+      match arg with
+         | Atom "nil" -> raise (Error "sum require at least one argument")
+         | Atom s1 -> int_of_string s1
+         | Cons (x, Atom "nil") -> sum x
+         | Cons (car1, cdr1) -> (sum car1) + (sum cdr1)
+   in Atom (string_of_int (sum arg1))
+
+(* interpret (- arg1 arg2) or (- arg1)*)
+let eval_sub arg =
+   match arg with
+   | Cons (Atom s1, Atom "nil") -> Atom (string_of_int (- int_of_string s1))
+   | Cons (Atom s1, Cons (Atom s2, Atom "nil")) -> Atom (string_of_int ((int_of_string s1) - (int_of_string s2)))
+   | _ -> raise (Error "substraction takes at most two arguments")
+
+(* interpret (\* arg1 arg2 ...)*)
+let eval_mul arg1 =
+   let rec mul arg =
+      match arg with
+         | Atom "nil" -> raise (Error "sum require at least one argument")
+         | Atom s1 -> int_of_string s1
+         | Cons (x, Atom "nil") -> mul x
+         | Cons (car1, cdr1) -> (mul car1) * (mul cdr1)
+   in Atom (string_of_int (mul arg1))
+
 (* table of builtin functions *)
 let all_builtins =
   [ (* Special forms *)
@@ -244,6 +273,9 @@ let all_builtins =
     "cdr", BuiltinFn1 eval_cdr;
     "cons", BuiltinFn2 eval_cons;
     "equal" , BuiltinFn2 eval_equal;
-    "progn", BuiltinFnN eval_progn
+    "progn", BuiltinFnN eval_progn;
+    "+", BuiltinFnN eval_sum;
+    "-", BuiltinFnN eval_sub;
+    "*", BuiltinFnN eval_mul
   ]
 
