@@ -229,7 +229,7 @@ let eval_letstar arg =
     end
   end
 
-(* interpret arithmetics operator *)
+(* interpret arithmetic operators *)
 (* interpret (+ arg1 arg2 ...)*)
 let eval_sum arg1 =
    let rec sum arg =
@@ -257,6 +257,35 @@ let eval_mul arg1 =
          | Cons (car1, cdr1) -> (mul car1) * (mul cdr1)
    in Atom (string_of_int (mul arg1))
 
+(* interpret comparaisons of integers *)
+let eval_inf arg1 arg2 =
+   match arg1, arg2 with
+   | Atom s1, Atom s2 -> if (int_of_string s1) <= (int_of_string s2) 
+                            then Atom "t"
+                            else Atom "nil"
+   | _, _ -> raise (Error "comparaison need two integers")
+
+let eval_infs arg1 arg2 =
+   match arg1, arg2 with
+   | Atom s1, Atom s2 -> if (int_of_string s1) < (int_of_string s2)
+                            then Atom "t"
+                            else Atom "nil"
+   | _, _ -> raise (Error "comparaison need two integers")
+
+let eval_sup arg1 arg2 =
+   match arg1, arg2 with
+   | Atom s1, Atom s2 -> if (int_of_string s1) >= (int_of_string s2)
+                            then Atom "t"
+                            else Atom "nil"
+   | _, _ -> raise (Error "comparaison need two integers")
+
+let eval_sups arg1 arg2 =
+   match arg1, arg2 with
+   | Atom s1, Atom s2 -> if (int_of_string s1) > (int_of_string s2)
+                            then Atom "t"
+                            else Atom "nil"
+   | _, _ -> raise (Error "comparaison need two integers")
+
 (* table of builtin functions *)
 let all_builtins =
   [ (* Special forms *)
@@ -276,6 +305,10 @@ let all_builtins =
     "progn", BuiltinFnN eval_progn;
     "+", BuiltinFnN eval_sum;
     "-", BuiltinFnN eval_sub;
-    "*", BuiltinFnN eval_mul
+    "*", BuiltinFnN eval_mul;
+    "<=", BuiltinFn2 eval_inf;
+    "<", BuiltinFn2 eval_infs;
+    ">=", BuiltinFn2 eval_sup;
+    ">", BuiltinFn2 eval_sups
   ]
 

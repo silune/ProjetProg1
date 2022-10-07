@@ -18,7 +18,7 @@ rule token = parse
 | '\''     { QUOTE }    
 | '.'      { DOT }
 | ';' [^ '\n']*  { token lexbuf }  (* skip comments starting with ; until newline *)
-| ['A'-'z' '0'-'9' '*' '+' '-']+ { NAME(Lexing.lexeme lexbuf) } (* return name *)
+| ['A'-'z' '0'-'9' '*' '+' '-' '<' '>' '=']+ { NAME(Lexing.lexeme lexbuf) } (* return name *)
 | eof { raise Eof } (* signal end of file *)
     
 
