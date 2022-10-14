@@ -6,7 +6,6 @@
 open Asyntax
 open Environment
 open Lisp
-open String
 
 let rec length args =
   match args with
