@@ -27,13 +27,12 @@ let is_int str =
 
 (* Verifie si une chaine de caractères est du format d'un flottant *)
 let is_float str =
-        let imax = (String.length str) in
-        let rec aux i =
-                if i >= imax then true
-                else if (('0' <= str.[i]) && (str.[i] <= '9')) || (str.[i] = '.')
-                        then aux (i+1)
-                        else false
-        in aux 0;;
+        if str = "."
+                then false
+                else let splited_str = (String.split_on_char '.' str) in
+                        match splited_str with
+                        | a::b::[] -> (is_int a) && (is_int b)
+                        | _ -> false;;
 
 (* Convertit une chaine de caractères en une option de lexeme si elle est reconnue, en None sinon *)
 let string_to_lexeme str =
@@ -50,13 +49,24 @@ let string_to_lexeme str =
         | "+." -> Some Add_float
         | "_." -> Some Sub_float
         | "*." -> Some Mul_float
-        | _ -> if is_float str
-                then Some (Float(str))
-                else if is_int str
-                        then Some (Int(str))
+        | _ -> if is_int str
+                then Some (Int(str))
+                else if is_float str
+                        then Some (Float(str))
                         else None;;
 let string_of_char c =
         (String.make 1 c);;
+
+let is_a_lexeme_prefix str =
+        if (is_float str) || (is_int str)
+                then true
+                else let lexeme_patterns = ["("; ")"; "int"; "float"; "+"; "-"; "*"; "+."; "-."; "*."] in
+                        let rec aux lst =
+                                match lst with
+                                | [] -> false
+                                | t::q when (String.starts_with ~prefix:str t) -> true
+                                | t::q -> aux q
+                        in aux lexeme_patterns;;
 
 let skip str skip_cara =
         let imax = (String.length str) in
@@ -75,12 +85,14 @@ let lexical_analyser stringExp =
                 if i >= imax
                         then if (Option.is_some bufferLex)
                                 then [Option.get bufferLex]
-                                else failwith ("\""^buffer^"\" is not recognized")
+                                else failwith ("'"^buffer^"' is not recognized")
                         else let nextChar = (string_of_char stringExpS.[i]) in
                                 let nextBuffer = (buffer ^ nextChar) in
-                                if (Option.is_some (string_to_lexeme nextBuffer))
+                                if (is_a_lexeme_prefix nextBuffer)
                                         then aux (i+1) nextBuffer
-                                        else (Option.get bufferLex)::(aux (i+1) nextChar)
+                                        else if (Option.is_some bufferLex)
+                                                then (Option.get bufferLex)::(aux (i+1) nextChar)
+                                                else failwith ("'"^buffer^"' is not recognized")
         in if imax = 0
                 then failwith "empty file"
                 else aux 1 (string_of_char (stringExpS.[0]));;
