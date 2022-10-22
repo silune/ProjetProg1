@@ -90,6 +90,14 @@ let type_number lexemeList =
         | [Float x] -> Some (Float x)
         | _ -> None;;
 
+let rec parenthise_minus lexemeList =
+        match lexemeList with
+        | t1::Sub_int::t2::q when (Option.is_some (type_number [t1])) || (t1 = L_bra) -> t1::Sub_int::(parenthise_minus (t2::q))
+        | t1::Sub_int::t2::q -> t1::L_bra::Sub_int::t2::R_bra::(parenthise_minus q)
+        | Sub_int::t::q when (Option.is_some (type_number [t])) -> L_bra::Sub_int::t::R_bra::(parenthise_minus q)
+        | t::q -> t::(parenthise_minus q)
+        | [] -> [];;
+
 let rec tree_of node arguments =
         match node, arguments with
         | Int_fun, [lexList] -> INTFUN (aux_ast lexList)
@@ -139,7 +147,7 @@ and aux_ast lexemeList =
 let syntax_analyser lexemeList =
         verify_function lexemeList;
         verify_parenthesis lexemeList;
-        aux_ast lexemeList;;
+        aux_ast (parenthise_minus lexemeList);;
 
 
 
