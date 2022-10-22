@@ -1,17 +1,17 @@
 open Lexer;;
 
-type exp =
-        | INTFUN of exp
-        | FLOATFUN of exp
-        | ADDI of exp * exp
-        | SUBI of exp * exp
-        | MULI of exp * exp
-        | DIVI of exp * exp
-        | MODI of exp * exp
-        | ADDF of exp * exp
-        | SUBF of exp * exp
-        | MULF of exp * exp
-        | NEG of exp (* not typed in ast (will be in tast) *)
+type ast =
+        | INTFUN of ast
+        | FLOATFUN of ast
+        | ADDI of ast * ast
+        | SUBI of ast * ast
+        | MULI of ast * ast
+        | DIVI of ast * ast
+        | MODI of ast * ast
+        | ADDF of ast * ast
+        | SUBF of ast * ast
+        | MULF of ast * ast
+        | NEG of ast (* not typed in ast (will be in tast) *)
         | INT of string
         | FLOAT of string
 
@@ -149,6 +149,59 @@ let syntax_analyser lexemeList =
         verify_parenthesis lexemeList;
         aux_ast (parenthise_minus lexemeList);;
 
+type tast =
+        | INTFUN of tast
+        | FLOATFUN of tast
+        | ADDI of tast * tast
+        | SUBI of tast * tast
+        | MULI of tast * tast
+        | DIVI of tast * tast
+        | MODI of tast * tast
+        | ADDF of tast * tast
+        | SUBF of tast * tast
+        | MULF of tast * tast
+        | NEGI of tast
+        | NEGF of tast
+        | INT of string
+        | FLOAT of string
 
 
-
+let ast_to_tast tree =
+        let rec aux (treeRec : ast) =
+                match treeRec with
+                | INTFUN t -> let (f, fType) = aux t in if fType = "float"
+                                                        then (INTFUN f, "int")
+                                                        else failwith "float type expected in 'int' function"
+                | FLOATFUN t -> let (f, fType) = aux t in if fType = "int"
+                                                        then (FLOATFUN f, "float")
+                                                        else failwith "int type expected in 'int' function" 
+                | ADDI (t1, t2) -> let ((f1, f1Type), (f2, f2Type)) = (aux t1, aux t2) in if (f1Type = "int") && (f2Type = "int")
+                                                        then (ADDI (f1, f2), "int")
+                                                        else failwith "int type expected with '+' operator" 
+                | SUBI (t1, t2) -> let ((f1, f1Type), (f2, f2Type)) = (aux t1, aux t2) in if (f1Type = "int") && (f2Type = "int")
+                                                        then (SUBI (f1, f2), "int")
+                                                        else failwith "int type expected with '-' operator" 
+                | MULI (t1, t2) -> let ((f1, f1Type), (f2, f2Type)) = (aux t1, aux t2) in if (f1Type = "int") && (f2Type = "int")
+                                                        then (MULI (f1, f2), "int")
+                                                        else failwith "int type expected with '*' operator" 
+                | DIVI (t1, t2) -> let ((f1, f1Type), (f2, f2Type)) = (aux t1, aux t2) in if (f1Type = "int") && (f2Type = "int")
+                                                        then (DIVI (f1, f2), "int")
+                                                        else failwith "int type expected with '/' operator" 
+                | MODI (t1, t2) -> let ((f1, f1Type), (f2, f2Type)) = (aux t1, aux t2) in if (f1Type = "int") && (f2Type = "int")
+                                                        then (MODI (f1, f2), "int")
+                                                        else failwith "int type expected with '%' operator" 
+                | ADDF (t1, t2) -> let ((f1, f1Type), (f2, f2Type)) = (aux t1, aux t2) in if (f1Type = "float") && (f2Type = "float")
+                                                        then (ADDF (f1, f2), "float")
+                                                        else failwith "float type expected with '+.' operator" 
+                | SUBF (t1, t2) -> let ((f1, f1Type), (f2, f2Type)) = (aux t1, aux t2) in if (f1Type = "float") && (f2Type = "float")
+                                                        then (SUBF (f1, f2), "float")
+                                                        else failwith "float type expected with '-.' operator" 
+                | MULF (t1, t2) -> let ((f1, f1Type), (f2, f2Type)) = (aux t1, aux t2) in if (f1Type = "float") && (f2Type = "float")
+                                                        then (MULF (f1, f2), "float")
+                                                        else failwith "float type expected with '*.' operator"
+                | NEG t -> let (f, fType) = aux t in if fType = "int"
+                                                        then (NEGI f, "int")
+                                                        else (NEGF f, "float")
+                | INT x -> (INT x, "int")
+                | FLOAT x -> (FLOAT x, "float")
+        in fst (aux tree);;
