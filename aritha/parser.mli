@@ -1,7 +1,5 @@
 open Lexer
 
-type ast
-
 type tast =
         | INTFUN of tast
         | FLOATFUN of tast
@@ -18,5 +16,5 @@ type tast =
         | INT of string
         | FLOAT of string
 
-val tast_of_ast: ast -> tast
+val syntax_analyser: lexeme list -> tast
 val type_of_tast: tast -> string

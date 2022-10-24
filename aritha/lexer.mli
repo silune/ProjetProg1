@@ -14,4 +14,4 @@ type lexeme =
         | Int of string
         | Float of string
 
-
+val lexical_analyser: string -> lexeme list

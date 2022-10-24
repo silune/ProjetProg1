@@ -90,24 +90,20 @@ let type_number lexemeList =
         | [Float x] -> Some (Float x)
         | _ -> None;;
 
-let rec parenthise_minus lexemeList =
-        match lexemeList with
-        | t1::Sub_int::t2::q when (Option.is_some (type_number [t1])) || (t1 = L_bra) -> t1::Sub_int::(parenthise_minus (t2::q))
-        | t1::Sub_int::t2::q -> t1::L_bra::Sub_int::t2::R_bra::(parenthise_minus q)
-        | Sub_int::t::q when (Option.is_some (type_number [t])) -> L_bra::Sub_int::t::R_bra::(parenthise_minus q)
-        | t::q -> t::(parenthise_minus q)
-        | [] -> [];;
-
 let rec tree_of node arguments =
         match node, arguments with
         | Int_fun, [lexList] -> INTFUN (aux_ast lexList)
         | Int_fun, _ -> failwith "'int' takes exactly one argument"
         | Float_fun, [lexList] -> FLOATFUN (aux_ast lexList)
         | Float_fun, _ -> failwith "'float' takes exactly one argument"
-        | Add_int, []::[lexList] -> aux_ast lexList
+        | Add_int, []::[t::q] -> if t = L_bra || (Option.is_some (type_number [t]))
+                                        then aux_ast (t::q)
+                                        else failwith "plus sign expected parenthesis"
         | Add_int, lexList1::[lexList2] -> ADDI (aux_ast lexList1, aux_ast lexList2)
         | Add_int, _ -> failwith "'+' takes one (on left) or two argument"
-        | Sub_int, []::[lexList] -> NEG (aux_ast lexList)
+        | Sub_int, []::[t::q] -> if t = L_bra || (Option.is_some (type_number [t]))
+                                        then NEG (aux_ast (t::q))
+                                        else failwith "negation expected parenthesis"
         | Sub_int, lexList1::[lexList2] -> SUBI (aux_ast lexList1, aux_ast lexList2)
         | Sub_int, _ -> failwith "'-' takes one (on left) or two argument"
         | Mul_int, lexList1::[lexList2] -> MULI (aux_ast lexList1, aux_ast lexList2)
@@ -144,10 +140,10 @@ and aux_ast lexemeList =
                                                 then failwith "unable to execute expression"
                                                 else aux_ast nextLexList;;
 
-let syntax_analyser lexemeList =
+let untyped_syntax_analyser lexemeList =
         verify_function lexemeList;
         verify_parenthesis lexemeList;
-        aux_ast (parenthise_minus lexemeList);;
+        aux_ast lexemeList;;
 
 type tast =
         | INTFUN of tast
@@ -206,6 +202,7 @@ let tast_of_ast tree =
                 | FLOAT x -> (FLOAT x, "float")
         in fst (aux tree);;
 
+let syntax_analyser lexemeList = tast_of_ast (untyped_syntax_analyser lexemeList);;
 
 let rec type_of_tast tree =
         match tree with

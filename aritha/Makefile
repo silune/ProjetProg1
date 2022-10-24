@@ -1,13 +1,21 @@
-test:
+aritha: x86_64 lexer parser compiler
+	ocamlc x86_64.cmo lexer.cmo parser.cmo compiler.cmo main.ml -o aritha
+
+x86_64:
 	ocamlc -c x86_64.mli
 	ocamlc -c x86_64.ml
+
+lexer:
 	ocamlc -c lexer.mli
 	ocamlc -c lexer.ml
-	ocamlc -c lexer.cmo lexer.mli parser.mli
+
+parser: lexer
+	ocamlc -c lexer.cmo parser.mli
 	ocamlc -c lexer.cmo parser.ml
-	ocamlc parser.cmo x86_64.cmo compiler.ml -o test
-	./test
-	gcc -no-pie test.s -o test2
+
+compiler: x86_64 parser
+	ocamlc -c x86_64.cmo parser.cmo compiler.mli
+	ocamlc -c x86_64.cmo parser.cmo compiler.ml
 
 clean:
-	rm -rf *.cmi *.cmo test test.s test2
+	rm -rf *.cmi *.cmo *.s aritha

@@ -82,10 +82,11 @@ let assembly_of_tree tree =
                 data =
                         label "S_int" ++ string "%d \n" ++
                         label "S_float" ++ string "%f \n" ++ 
-                        floatLabel;} in
-        let c = open_out "test.s" in
+                        floatLabel} in
+        code;;
+
+let write_code code fileName =
+        let c = open_out (fileName ^ ".s") in
         let fmt = formatter_of_out_channel c in
         X86_64.print_program fmt code;
         close_out c;;
-
-assembly_of_tree (NEGI (INTFUN (FLOAT "1.22")));;
