@@ -10,7 +10,7 @@ let pop_float r = (movsd (ind rsp) (reg r)) ++ (addq (imm 8) (reg rsp));;
 
 let code_of_op op =
         match op with
-        | INT x -> movq (imm (int_of_string x)) (reg rdi) ++ (push_int rdi)
+        | INT x -> (movq (imm (int_of_string x)) (reg rdi)) ++ (push_int rdi)
         | ADDI _ -> (pop_int rdi) ++ (pop_int rsi) ++ (addq (reg rdi) (reg rsi)) ++ (push_int rsi)
         | SUBI _ -> (pop_int rdi) ++ (pop_int rsi) ++ (subq (reg rdi) (reg rsi)) ++ (push_int rsi)
         | MULI _ -> (pop_int rdi) ++ (pop_int rsi) ++ (imulq (reg rdi) (reg rsi)) ++ (push_int rsi)
@@ -19,15 +19,24 @@ let code_of_op op =
         | NEGI _ -> (pop_int rdi) ++ (negq (reg rdi)) ++ (push_int rdi)
         | _ -> failwith "not implemented in assembly yet";;
 
-let rec code_of_tree tree floatCount =
+let rec code_of_tree tree floatCount floatLabel =
         match tree with
-        | INT x -> (code_of_op tree, floatCount)
+        | INT x ->      (movq (imm (int_of_string x)) (reg rdi) ++ (push_int rdi),
+                        floatCount,
+                        floatLabel)
+        | FLOAT x ->    (movsd (ilab ("f"^(string_of_int floatCount))) (reg xmm0) ++ (push_float xmm0),
+                        floatCount + 1,
+                        floatLabel ++ label ("f"^(string_of_int floatCount)) ++ double (float_of_string x))
         | ADDI (t1, t2) | SUBI (t1, t2) | MULI (t1, t2) | DIVI (t1, t2) | MODI (t1, t2) -> 
-                        let (subCode1, subFloatCount1) = (code_of_tree t1 floatCount) in
-                        let (subCode2, subFloatCount2) = (code_of_tree t2 subFloatCount1) in
-                                (subCode1 ++ subCode2 ++ (code_of_op tree), subFloatCount2)
-        | NEGI t -> let (subCode, subFloatCount) = (code_of_tree t floatCount) in
-                                (subCode ++ (code_of_op tree), subFloatCount)
+                let (subCode1, subFloatCount1, subFloatLabel1) = (code_of_tree t1 floatCount floatLabel) in
+                let (subCode2, subFloatCount2, subFloatLabel2) = (code_of_tree t2 subFloatCount1 subFloatLabel1) in
+                        (subCode1 ++ subCode2 ++ (code_of_op tree),
+                        subFloatCount2, 
+                        subFloatLabel2)
+        | NEGI t -> let (subCode, subFloatCount, subFloatLabel) = (code_of_tree t floatCount floatLabel) in
+                                (subCode ++ (code_of_op tree),
+                                subFloatCount,
+                                subFloatLabel)
         | _ -> failwith "not implemented in assembly yet";;
 
 let print_int_fun =
@@ -39,7 +48,7 @@ let print_int_fun =
         ret
 
 let assembly_of_tree tree =
-        let (codeTree, floatCount) = code_of_tree tree 0 in
+        let (codeTree, _, floatLabel) = code_of_tree tree 0 nop in
         let code = {text =
                 globl "main" ++ label "main" ++
                 pushq (reg rbp) ++
@@ -52,7 +61,7 @@ let assembly_of_tree tree =
                 ret ++
                 print_int_fun;
                 data =
-                        label "S_int" ++ string "%d \n";} in
+                        label "S_int" ++ string "%d \n" ++ floatLabel;} in
         let c = open_out "test.s" in
         let fmt = formatter_of_out_channel c in
         X86_64.print_program fmt code;
