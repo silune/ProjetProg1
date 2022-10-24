@@ -167,7 +167,7 @@ val movb: [`B] operand -> [`B] operand -> text
 val movw: [`W] operand -> [`W] operand -> text
 val movl: [`L] operand -> [`L] operand -> text
 val movq: [`Q] operand -> [`Q] operand -> text
-val movsd [`Q] operand -> [`Q] operand -> text
+val movsd: [`Q] operand -> [`Q] operand -> text
   (** attention : toutes les combinaisons d'opérandes ne sont pas permises *)
 
 val movsbw: [`B] operand -> [`W] register -> text
