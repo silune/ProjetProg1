@@ -141,6 +141,9 @@ let pr_ilist fmt l =
 let pr_alist fmt l =
   pr_list fmt (fun fmt (a : label) -> fprintf fmt "%s" a) l
 
+let cvtsi2sdq a b = ins "cvtsi2sdq \t%a, %a" a () b ()
+let cvttsd2siq a b = ins "cvttsd2siq \t%a, %a" a () b ()
+
 let movb a b = ins "movb \t%a, %a" a () b ()
 let movw a b = ins "movw \t%a, %a" a () b ()
 let movl a b = ins "movl \t%a, %a" a () b ()

@@ -163,6 +163,9 @@ val ilab: label -> [`Q] operand
 
 (** {2 Transfert } *)
 
+val cvtsi2sdq: [`Q] operand -> [`Q] operand -> text
+val cvttsd2siq: [`Q] operand -> [`Q] operand -> text
+
 val movb: [`B] operand -> [`B] operand -> text
 val movw: [`W] operand -> [`W] operand -> text
 val movl: [`L] operand -> [`L] operand -> text
