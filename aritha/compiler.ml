@@ -10,13 +10,16 @@ let pop_float r = (movsd (ind rsp) (reg r)) ++ (addq (imm 8) (reg rsp));;
 
 let code_of_op op =
         match op with
-        | ADDI _ -> (pop_int rdi) ++ (pop_int rsi) ++ (addq (reg rdi) (reg rsi)) ++ (push_int rsi)
-        | SUBI _ -> (pop_int rdi) ++ (pop_int rsi) ++ (subq (reg rdi) (reg rsi)) ++ (push_int rsi)
-        | MULI _ -> (pop_int rdi) ++ (pop_int rsi) ++ (imulq (reg rdi) (reg rsi)) ++ (push_int rsi)
-        | DIVI _ -> (pop_int rax) ++ (pop_int rdi) ++ (movq (imm 0) (reg rdx)) ++ (idivq (reg rdi)) ++ (push_int rax)
-        | MODI _ -> (pop_int rax) ++ (pop_int rdi) ++ (movq (imm 0) (reg rdx)) ++ (idivq (reg rdi)) ++ (push_int rdx)
+        | ADDI _ -> (pop_int rdi) ++ (pop_int rsi) ++ addq (reg rdi) (reg rsi) ++ (push_int rsi)
+        | SUBI _ -> (pop_int rdi) ++ (pop_int rsi) ++ subq (reg rdi) (reg rsi) ++ (push_int rsi)
+        | MULI _ -> (pop_int rdi) ++ (pop_int rsi) ++ imulq (reg rdi) (reg rsi) ++ (push_int rsi)
+        | DIVI _ -> (pop_int rax) ++ (pop_int rdi) ++ movq (imm 0) (reg rdx) ++ idivq (reg rdi) ++ (push_int rax)
+        | MODI _ -> (pop_int rax) ++ (pop_int rdi) ++ movq (imm 0) (reg rdx) ++ idivq (reg rdi) ++ (push_int rdx)
         | NEGI _ -> (pop_int rdi) ++ (negq (reg rdi)) ++ (push_int rdi)
-        | ADDF _ -> (pop_float xmm0) ++ (pop_float xmm1) ++ (addsd (reg xmm0) (reg xmm1)) ++ (push_float xmm1)
+        | ADDF _ -> (pop_float xmm0) ++ (pop_float xmm1) ++ addsd (reg xmm0) (reg xmm1) ++ (push_float xmm1)
+        | SUBF _ -> (pop_float xmm0) ++ (pop_float xmm1) ++ subsd (reg xmm0) (reg xmm1) ++ (push_float xmm1)
+        | MULF _ -> (pop_float xmm0) ++ (pop_float xmm1) ++ mulsd (reg xmm0) (reg xmm1) ++ (push_float xmm1)
+        | NEGF _ -> (pop_float xmm0) ++ xorpd (reg xmm1) (reg xmm1) ++ subsd (reg xmm0) (reg xmm1) ++ (push_float xmm1)
         | _ -> failwith "not implemented in assembly yet";;
 
 let rec code_of_tree tree floatCount floatLabel =
@@ -27,13 +30,14 @@ let rec code_of_tree tree floatCount floatLabel =
         | FLOAT x ->    (movsd (lab ("f"^(string_of_int floatCount))) (reg xmm0) ++ (push_float xmm0),
                         floatCount + 1,
                         floatLabel ++ label ("f"^(string_of_int floatCount)) ++ double (float_of_string x))
-        | ADDI (t1, t2) | SUBI (t1, t2) | MULI (t1, t2) | DIVI (t1, t2) | MODI (t1, t2) | ADDF (t1, t2) -> 
+        | ADDI (t1, t2) | SUBI (t1, t2) | MULI (t1, t2) | DIVI (t1, t2) | MODI (t1, t2)
+        | ADDF (t1, t2) | SUBF (t1, t2) | MULF (t1, t2) -> 
                 let (subCode1, subFloatCount1, subFloatLabel1) = (code_of_tree t1 floatCount floatLabel) in
                 let (subCode2, subFloatCount2, subFloatLabel2) = (code_of_tree t2 subFloatCount1 subFloatLabel1) in
                         (subCode1 ++ subCode2 ++ (code_of_op tree),
                         subFloatCount2, 
                         subFloatLabel2)
-        | NEGI t -> let (subCode, subFloatCount, subFloatLabel) = (code_of_tree t floatCount floatLabel) in
+        | NEGI t | NEGF t -> let (subCode, subFloatCount, subFloatLabel) = (code_of_tree t floatCount floatLabel) in
                                 (subCode ++ (code_of_op tree),
                                 subFloatCount,
                                 subFloatLabel)
@@ -82,4 +86,4 @@ let assembly_of_tree tree =
         X86_64.print_program fmt code;
         close_out c;;
 
-assembly_of_tree (ADDF (FLOAT "0.2", FLOAT "0.22"));;
+assembly_of_tree (NEGF (FLOAT "0.22"));;

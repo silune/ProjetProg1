@@ -220,10 +220,12 @@ val subb: [`B] operand -> [`B] operand -> text
 val subw: [`W] operand -> [`W] operand -> text
 val subl: [`L] operand -> [`L] operand -> text
 val subq: [`Q] operand -> [`Q] operand -> text
+val subsd: [`Q] operand -> [`Q] operand -> text
 
 val imulw: [`W] operand -> [`W] operand -> text
 val imull: [`L] operand -> [`L] operand -> text
 val imulq: [`Q] operand -> [`Q] operand -> text
+val mulsd: [`Q] operand -> [`Q] operand -> text
 
 val idivq: [`Q] operand -> text
 val cqto: text
@@ -249,6 +251,7 @@ val xorb: [`B] operand -> [`B] operand -> text
 val xorw: [`W] operand -> [`W] operand -> text
 val xorl: [`L] operand -> [`L] operand -> text
 val xorq: [`Q] operand -> [`Q] operand -> text
+val xorpd: [`Q] operand -> [`Q] operand -> text
   (** Opérations de manipulation de bits. "et" bit à bit, "ou" bit à
        bit, "not" bit à bit *)
 

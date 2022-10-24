@@ -192,10 +192,12 @@ let subb a b = ins "subb \t%a, %a" a () b ()
 let subw a b = ins "subw \t%a, %a" a () b ()
 let subl a b = ins "subl \t%a, %a" a () b ()
 let subq a b = ins "subq \t%a, %a" a () b ()
+let subsd a b = ins "subsd \t%a, %a" a () b ()
 
 let imulw a b = ins "imulw \t%a, %a" a () b ()
 let imull a b = ins "imull \t%a, %a" a () b ()
 let imulq a b = ins "imulq \t%a, %a" a () b ()
+let mulsd a b = ins "mulsd \t%a, %a" a () b ()
 
 let idivq a = ins "idivq \t%a" a ()
 let cqto = S "\tcqto\n"
@@ -219,6 +221,7 @@ let xorb a b = ins "xorb \t%a, %a" a () b ()
 let xorw a b = ins "xorw \t%a, %a" a () b ()
 let xorl a b = ins "xorl \t%a, %a" a () b ()
 let xorq a b = ins "xorq \t%a, %a" a () b ()
+let xorpd a b = ins "xorpd \t%a, %a" a () b ()
 
 let shlb a b = ins "shlb \t%a, %a" a () b ()
 let shlw a b = ins "shlw \t%a, %a" a () b ()
