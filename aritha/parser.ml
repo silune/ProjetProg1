@@ -166,7 +166,7 @@ type tast =
         | FLOAT of string
 
 
-let ast_to_tast tree =
+let tast_of_ast tree =
         let rec aux (treeRec : ast) =
                 match treeRec with
                 | INTFUN t -> let (f, fType) = aux t in if fType = "float"
@@ -205,3 +205,11 @@ let ast_to_tast tree =
                 | INT x -> (INT x, "int")
                 | FLOAT x -> (FLOAT x, "float")
         in fst (aux tree);;
+
+
+let rec type_of_tast tree =
+        match tree with
+        | INTFUN _ | ADDI _ | SUBI _ | MULI _ | DIVI _ | MODI _ | NEGI _ | INT _ -> "int"
+        | _ -> "float";;
+
+
