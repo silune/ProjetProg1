@@ -5,6 +5,8 @@ open Parser
 
 let push_int r = pushq (reg r);;
 let pop_int r = popq r;;
+let push_float r = (subq (imm 8) (reg rsp)) ++ (movsd (reg r) (ind rsp));;
+let pop_float r = (movsd (ind rsp) (reg r)) ++ (adds (imm8) (reg rsp));;
 
 let rec code_of tree =
         let code t1 t2 = (code_of t1) ++ (code_of t2) in
@@ -29,13 +31,17 @@ let print_int_fun =
 let assembly_of_tree tree =
         let code = {text =
                 globl "main" ++ label "main" ++
+                pushq (reg rbp) ++
+                movq (reg rsp) (reg rbp) ++
                 (code_of tree) ++
                 (pop_int rdi) ++
+                movq (reg rbp) (reg rsp) ++
+                popq rbp ++
                 call "print_int" ++
                 ret ++
                 print_int_fun;
                 data =
-                        label "S_int" ++ string "%d";} in
+                        label "S_int" ++ string "%d \n";} in
         let c = open_out "test.s" in
         let fmt = formatter_of_out_channel c in
         X86_64.print_program fmt code;

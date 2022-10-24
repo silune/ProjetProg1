@@ -44,6 +44,9 @@ let r13d = "%r13d"
 let r14d = "%r14d"
 let r15d = "%r15d"
 
+let xmm0 = "%xmm0"
+let xmm1 = "%xmm1"
+
 let ax = "%ax"
 let bx = "%bx"
 let cx = "%cx"
@@ -138,143 +141,145 @@ let pr_ilist fmt l =
 let pr_alist fmt l =
   pr_list fmt (fun fmt (a : label) -> fprintf fmt "%s" a) l
 
-let movb a b = ins "movb %a, %a" a () b ()
-let movw a b = ins "movw %a, %a" a () b ()
-let movl a b = ins "movl %a, %a" a () b ()
-let movq a b = ins "movq %a, %a" a () b ()
+let movb a b = ins "movb \t%a, %a" a () b ()
+let movw a b = ins "movw \t%a, %a" a () b ()
+let movl a b = ins "movl \t%a, %a" a () b ()
+let movq a b = ins "movq \t%a, %a" a () b ()
+let movsd a b = ins "movsd \t%a, %a" a () b ()
 
-let movabsq a b = ins "movabsq %a, %s" a () b
+let movabsq a b = ins "movabsq \t%a, %s" a () b
 
-let movsbw a b = ins "movsbw %a, %s" a () b
-let movsbl a b = ins "movsbl %a, %s" a () b
-let movsbq a b = ins "movsbq %a, %s" a () b
-let movswl a b = ins "movswl %a, %s" a () b
-let movswq a b = ins "movswq %a, %s" a () b
-let movslq a b = ins "movslq %a, %s" a () b
+let movsbw a b = ins "movsbw \t%a, %s" a () b
+let movsbl a b = ins "movsbl \t%a, %s" a () b
+let movsbq a b = ins "movsbq \t%a, %s" a () b
+let movswl a b = ins "movswl \t%a, %s" a () b
+let movswq a b = ins "movswq \t%a, %s" a () b
+let movslq a b = ins "movslq \t%a, %s" a () b
 
-let movzbw a b = ins "movzbw %a, %s" a () b
-let movzbl a b = ins "movzbl %a, %s" a () b
-let movzbq a b = ins "movzbq %a, %s" a () b
-let movzwl a b = ins "movzwl %a, %s" a () b
-let movzwq a b = ins "movzwq %a, %s" a () b
+let movzbw a b = ins "movzbw \t%a, %s" a () b
+let movzbl a b = ins "movzbl \t%a, %s" a () b
+let movzbq a b = ins "movzbq \t%a, %s" a () b
+let movzwl a b = ins "movzwl \t%a, %s" a () b
+let movzwq a b = ins "movzwq \t%a, %s" a () b
 
-let leab op r = ins "leab %a, %s" op () r
-let leaw op r = ins "leaw %a, %s" op () r
-let leal op r = ins "leal %a, %s" op () r
-let leaq op r = ins "leaq %a, %s" op () r
+let leab op r = ins "leab \t%a, %s" op () r
+let leaw op r = ins "leaw \t%a, %s" op () r
+let leal op r = ins "leal \t%a, %s" op () r
+let leaq op r = ins "leaq \t%a, %s" op () r
 
-let incb a = ins "incb %a" a ()
-let incw a = ins "incw %a" a ()
-let incl a = ins "incl %a" a ()
-let incq a = ins "incq %a" a ()
+let incb a = ins "incb \t%a" a ()
+let incw a = ins "incw \t%a" a ()
+let incl a = ins "incl \t%a" a ()
+let incq a = ins "incq \t%a" a ()
 
-let decb a = ins "decb %a" a ()
-let decw a = ins "decw %a" a ()
-let decl a = ins "decl %a" a ()
-let decq a = ins "decq %a" a ()
+let decb a = ins "decb \t%a" a ()
+let decw a = ins "decw \t%a" a ()
+let decl a = ins "decl \t%a" a ()
+let decq a = ins "decq \t%a" a ()
 
-let negb a = ins "negb %a" a ()
-let negw a = ins "negw %a" a ()
-let negl a = ins "negl %a" a ()
-let negq a = ins "negq %a" a ()
+let negb a = ins "negb \t%a" a ()
+let negw a = ins "negw \t%a" a ()
+let negl a = ins "negl \t%a" a ()
+let negq a = ins "negq \t%a" a ()
 
-let addb a b = ins "addb %a, %a" a () b ()
-let addw a b = ins "addw %a, %a" a () b ()
-let addl a b = ins "addl %a, %a" a () b ()
-let addq a b = ins "addq %a, %a" a () b ()
+let addb a b = ins "addb \t%a, %a" a () b ()
+let addw a b = ins "addw \t%a, %a" a () b ()
+let addl a b = ins "addl \t%a, %a" a () b ()
+let addq a b = ins "addq \t%a, %a" a () b ()
+let addsd a b = ins "addsd \t%a, %a" a () b ()
 
-let subb a b = ins "subb %a, %a" a () b ()
-let subw a b = ins "subw %a, %a" a () b ()
-let subl a b = ins "subl %a, %a" a () b ()
-let subq a b = ins "subq %a, %a" a () b ()
+let subb a b = ins "subb \t%a, %a" a () b ()
+let subw a b = ins "subw \t%a, %a" a () b ()
+let subl a b = ins "subl \t%a, %a" a () b ()
+let subq a b = ins "subq \t%a, %a" a () b ()
 
-let imulw a b = ins "imulw %a, %a" a () b ()
-let imull a b = ins "imull %a, %a" a () b ()
-let imulq a b = ins "imulq %a, %a" a () b ()
+let imulw a b = ins "imulw \t%a, %a" a () b ()
+let imull a b = ins "imull \t%a, %a" a () b ()
+let imulq a b = ins "imulq \t%a, %a" a () b ()
 
-let idivq a = ins "idivq %a" a ()
+let idivq a = ins "idivq \t%a" a ()
 let cqto = S "\tcqto\n"
 
-let notb a = ins "notb %a" a ()
-let notw a = ins "notw %a" a ()
-let notl a = ins "notl %a" a ()
-let notq a = ins "notq %a" a ()
+let notb a = ins "notb \t%a" a ()
+let notw a = ins "notw \t%a" a ()
+let notl a = ins "notl \t%a" a ()
+let notq a = ins "notq \t%a" a ()
 
-let andb a b = ins "andb %a, %a" a () b ()
-let andw a b = ins "andw %a, %a" a () b ()
-let andl a b = ins "andl %a, %a" a () b ()
-let andq a b = ins "andq %a, %a" a () b ()
+let andb a b = ins "andb \t%a, %a" a () b ()
+let andw a b = ins "andw \t%a, %a" a () b ()
+let andl a b = ins "andl \t%a, %a" a () b ()
+let andq a b = ins "andq \t%a, %a" a () b ()
 
-let orb  a b = ins "orb %a, %a" a () b ()
-let orw  a b = ins "orw %a, %a" a () b ()
-let orl  a b = ins "orl %a, %a" a () b ()
-let orq  a b = ins "orq %a, %a" a () b ()
+let orb  a b = ins "orb \t%a, %a" a () b ()
+let orw  a b = ins "orw \t%a, %a" a () b ()
+let orl  a b = ins "orl \t%a, %a" a () b ()
+let orq  a b = ins "orq \t%a, %a" a () b ()
 
-let xorb a b = ins "xorb %a, %a" a () b ()
-let xorw a b = ins "xorw %a, %a" a () b ()
-let xorl a b = ins "xorl %a, %a" a () b ()
-let xorq a b = ins "xorq %a, %a" a () b ()
+let xorb a b = ins "xorb \t%a, %a" a () b ()
+let xorw a b = ins "xorw \t%a, %a" a () b ()
+let xorl a b = ins "xorl \t%a, %a" a () b ()
+let xorq a b = ins "xorq \t%a, %a" a () b ()
 
-let shlb a b = ins "shlb %a, %a" a () b ()
-let shlw a b = ins "shlw %a, %a" a () b ()
-let shll a b = ins "shll %a, %a" a () b ()
-let shlq a b = ins "shlq %a, %a" a () b ()
+let shlb a b = ins "shlb \t%a, %a" a () b ()
+let shlw a b = ins "shlw \t%a, %a" a () b ()
+let shll a b = ins "shll \t%a, %a" a () b ()
+let shlq a b = ins "shlq \t%a, %a" a () b ()
 
-let shrb a b = ins "shrb %a, %a" a () b ()
-let shrw a b = ins "shrw %a, %a" a () b ()
-let shrl a b = ins "shrl %a, %a" a () b ()
-let shrq a b = ins "shrq %a, %a" a () b ()
+let shrb a b = ins "shrb \t%a, %a" a () b ()
+let shrw a b = ins "shrw \t%a, %a" a () b ()
+let shrl a b = ins "shrl \t%a, %a" a () b ()
+let shrq a b = ins "shrq \t%a, %a" a () b ()
 
-let sarb a b = ins "sarb %a, %a" a () b ()
-let sarw a b = ins "sarw %a, %a" a () b ()
-let sarl a b = ins "sarl %a, %a" a () b ()
-let sarq a b = ins "sarq %a, %a" a () b ()
+let sarb a b = ins "sarb \t%a, %a" a () b ()
+let sarw a b = ins "sarw \t%a, %a" a () b ()
+let sarl a b = ins "sarl \t%a, %a" a () b ()
+let sarq a b = ins "sarq \t%a, %a" a () b ()
 
-let jmp (z: label) = ins "jmp %s" z
-let jmp_star o = ins "jmp *%a" o ()
+let jmp (z: label) = ins "jmp \t%s" z
+let jmp_star o = ins "jmp \t*%a" o ()
 
-let call (z: label) = ins "call %a" mangle z
-let call_star z = ins "call *%a" z ()
+let call (z: label) = ins "call \t%a" mangle z
+let call_star z = ins "call \t*%a" z ()
 let leave = ins "leave"
 let ret = ins "ret"
 
-let je (z: label) = ins "je %s" z
-let jz (z: label) = ins "jz %s" z
-let jne(z: label) = ins "jne %s" z
-let jnz(z: label) = ins "jnz %s" z
-let js (z: label) = ins "js %s" z
-let jns(z: label) = ins "jns %s" z
-let jg (z: label) = ins "jg %s" z
-let jge(z: label) = ins "jge %s" z
-let jl (z: label) = ins "jl %s" z
-let jle(z: label) = ins "jle %s" z
-let ja (z: label) = ins "ja %s" z
-let jae(z: label) = ins "jae %s" z
-let jb (z: label) = ins "jb %s" z
-let jbe(z: label) = ins "jbe %s" z
+let je (z: label) = ins "je \t%s" z
+let jz (z: label) = ins "jz \t%s" z
+let jne(z: label) = ins "jne \t%s" z
+let jnz(z: label) = ins "jnz \t%s" z
+let js (z: label) = ins "js \t%s" z
+let jns(z: label) = ins "jns \t%s" z
+let jg (z: label) = ins "jg \t%s" z
+let jge(z: label) = ins "jge \t%s" z
+let jl (z: label) = ins "jl \t%s" z
+let jle(z: label) = ins "jle \t%s" z
+let ja (z: label) = ins "ja \t%s" z
+let jae(z: label) = ins "jae \t%s" z
+let jb (z: label) = ins "jb \t%s" z
+let jbe(z: label) = ins "jbe \t%s" z
 
-let cmpb a b = ins "cmpb %a, %a" a () b ()
-let cmpw a b = ins "cmpw %a, %a" a () b ()
-let cmpl a b = ins "cmpl %a, %a" a () b ()
-let cmpq a b = ins "cmpq %a, %a" a () b ()
+let cmpb a b = ins "cmpb \t%a, %a" a () b ()
+let cmpw a b = ins "cmpw \t%a, %a" a () b ()
+let cmpl a b = ins "cmpl \t%a, %a" a () b ()
+let cmpq a b = ins "cmpq \t%a, %a" a () b ()
 
-let testb a b = ins "testb %a, %a" a () b ()
-let testw a b = ins "testw %a, %a" a () b ()
-let testl a b = ins "testl %a, %a" a () b ()
-let testq a b = ins "testq %a, %a" a () b ()
+let testb a b = ins "testb \t%a, %a" a () b ()
+let testw a b = ins "testw \t%a, %a" a () b ()
+let testl a b = ins "testl \t%a, %a" a () b ()
+let testq a b = ins "testq \t%a, %a" a () b ()
 
-let sete  a = ins "sete %a" a ()
-let setne a = ins "setne %a" a ()
-let sets  a = ins "sets %a" a ()
-let setns a = ins "setns %a" a ()
-let setg  a = ins "setg %a" a ()
-let setge a = ins "setge %a" a ()
-let setl  a = ins "setl %a" a ()
-let setle a = ins "setle %a" a ()
-let seta  a = ins "seta %a" a ()
-let setae a = ins "setae %a" a ()
-let setb  a = ins "setb %a" a ()
-let setbe a = ins "setbe %a" a ()
+let sete  a = ins "sete \t%a" a ()
+let setne a = ins "setne \t%a" a ()
+let sets  a = ins "sets \t%a" a ()
+let setns a = ins "setns \t%a" a ()
+let setg  a = ins "setg \t%a" a ()
+let setge a = ins "setge \t%a" a ()
+let setl  a = ins "setl \t%a" a ()
+let setle a = ins "setle \t%a" a ()
+let seta  a = ins "seta \t%a" a ()
+let setae a = ins "setae \t%a" a ()
+let setb  a = ins "setb \t%a" a ()
+let setbe a = ins "setbe \t%a" a ()
 
 let label (s : label) = S (asprintf "%a:\n" mangle s)
 let globl (s: label) = S (asprintf "\t.globl\t%a\n" mangle s)
@@ -292,8 +297,8 @@ let string s = ins ".string %S" s
 let address l = ins ".quad %a" pr_alist l
 let space n = ins ".space %d" n
 
-let pushq a = ins "pushq %a" a ()
-let popq r = ins "popq %s" r
+let pushq a = ins "pushq \t%a" a ()
+let popq r = ins "popq \t%s" r
 
 type program = {
   text : [ `text ] asm;
