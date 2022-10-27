@@ -14,6 +14,7 @@ type tast =
         | NEGI of tast
         | NEGF of tast
         | FACT of tast
+        | POWERI of tast * tast
         | INT of string
         | FLOAT of string
 

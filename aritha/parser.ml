@@ -16,13 +16,14 @@ type tast =
         | NEGI of tast
         | NEGF of tast
         | FACT of tast
+        | POWERI of tast * tast
         | INT of string
         | FLOAT of string
 
 (* Priority Order definition *)
 let priorityOrder = [|  [Add_int; Sub_int; Add_float; Sub_float];
                         [Mul_int; Div; Mod; Mul_float];
-                        [Int_fun; Float_fun; Fact]|]
+                        [Int_fun; Float_fun; Fact; Power]|]
 
 let priorityMax = Array.length priorityOrder
 
@@ -76,6 +77,7 @@ let verify_type tree =
                 | SUBF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '-.' operator" 
                 | MULF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '*.' operator"
                 | FACT t -> if (aux t = "int") then "int" else failwith "int type expected with '!' operator"
+                | POWERI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '^' operator"
                 | INT x -> "int"
                 | FLOAT x -> "float"
                 | NEGI t -> "int"
@@ -176,6 +178,7 @@ and run_tree priorityLevel rightTree operator lexemeList =
         | Float_fun -> run_with (FLOATFUN rightTree)
         | Int_fun -> run_with (INTFUN rightTree)
         | Fact -> run_with (FACT rightTree)
+        | Power -> run_with (POWERI (rightTree, build_left leftOperand))
         | _ -> failwith "not implemented yet"
                 
 (* ----- Main functions ----- *)
@@ -190,7 +193,7 @@ let syntax_analyser lexemeList =
 (* gives the type of a tast (using strings "int" and "float") *)
 let rec type_of_tast tree =
         match tree with
-        | INTFUN _ | ADDI _ | SUBI _ | MULI _ | DIVI _ | MODI _ | NEGI _ | INT _ | FACT _ -> "int"
+        | INTFUN _ | ADDI _ | SUBI _ | MULI _ | DIVI _ | MODI _ | NEGI _ | INT _ | FACT _ | POWERI _ -> "int"
         | _ -> "float"
 
 (* ----- Debug functions ----- *)
@@ -210,6 +213,7 @@ let string_of_lexeme lexeme =
         | Sub_float -> "Sub_float"
         | Mul_float -> "Mul_float"
         | Fact -> "Fact"
+        | Power -> "Power"
         | Int x -> "Int " ^ x
         | Float x -> "Float " ^ x
 

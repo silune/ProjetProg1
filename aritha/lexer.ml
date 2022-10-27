@@ -15,6 +15,7 @@ type lexeme =
         | Sub_float
         | Mul_float
         | Fact
+        | Power
         | Int of string
         | Float of string
 
@@ -73,6 +74,7 @@ let string_to_lexeme str =
         | "-." -> Some Sub_float
         | "*." -> Some Mul_float
         | "!" -> Some Fact
+        | "^" -> Some Power
         | _ -> if is_int str
                 then Some (Int(str))
                 else if is_float str
@@ -83,7 +85,7 @@ let string_to_lexeme str =
 let is_a_lexeme_prefix str =
         if (is_float str) || (is_int str)
                 then true
-                else let lexeme_patterns = ["("; ")"; "int"; "float"; "+"; "-"; "*"; "+."; "-."; "*."; "!"] in
+                else let lexeme_patterns = ["("; ")"; "int"; "float"; "+"; "-"; "*"; "+."; "-."; "*."; "!"; "^"] in
                         let rec aux lst =
                                 match lst with
                                 | [] -> false
