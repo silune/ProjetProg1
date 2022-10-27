@@ -32,6 +32,21 @@ let print_float_fun =
         movq (imm 0) (reg rax) ++
         ret
 
+(* label function to compute factorial *)
+let print_fact_fun =
+        label "fact_fun" ++
+        cmpq (imm 1) (reg rdi) ++
+        je "fact_init" ++
+        (push_int rdi) ++
+        decq (reg rdi) ++
+        call "fact_fun" ++
+        (pop_int rdi) ++
+        imulq (reg rdi) (reg rax) ++
+        ret ++
+        label "fact_init" ++
+        movq (imm 1) (reg rax) ++
+        ret
+
 (* stack initalisation to prevent segment fault *)
 let init_stack = pushq (reg rbp) ++ movq (reg rsp) (reg rbp)
 let end_stack = movq (reg rbp) (reg rsp) ++ popq rbp
@@ -53,6 +68,7 @@ let code_of_op op =
         | NEGF _ -> (pop_float xmm0) ++ xorpd (reg xmm1) (reg xmm1) ++ subsd (reg xmm0) (reg xmm1) ++ (push_float xmm1)
         | INTFUN _ -> (pop_float xmm0) ++ cvttsd2siq (reg xmm0) (reg rdi) ++ (push_int rdi)
         | FLOATFUN _ -> (pop_int rdi) ++ cvtsi2sdq (reg rdi) (reg xmm0) ++ (push_float xmm0)
+        | FACT _ -> (pop_int rdi) ++ call "fact_fun" ++ (push_int rax)
         | _ -> failwith "impossible !"
 
 (* convert a tree into code, create float's label numerated as ".LCxxx" *)
@@ -71,7 +87,7 @@ let rec code_of_tree tree floatCount floatLabel =
                         (subCode1 ++ subCode2 ++ (code_of_op tree),
                         subFloatCount2, 
                         subFloatLabel2)
-        | NEGI t | NEGF t | FLOATFUN t | INTFUN t ->
+        | NEGI t | NEGF t | FLOATFUN t | INTFUN t | FACT t ->
                 let (subCode, subFloatCount, subFloatLabel) = (code_of_tree t floatCount floatLabel) in
                         (subCode ++ (code_of_op tree),
                         subFloatCount,
@@ -92,7 +108,8 @@ let assembly_of_tree tree =
                 globl "main" ++ label "main" ++
                 init_stack ++
                 codeTree ++
-                (print_res tree);
+                (print_res tree) ++
+                (print_fact_fun);
                 data =
                         label "S_int" ++ string "%d \n" ++
                         label "S_float" ++ string "%f \n" ++ 

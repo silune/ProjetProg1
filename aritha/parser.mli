@@ -13,6 +13,7 @@ type tast =
         | MULF of tast * tast
         | NEGI of tast
         | NEGF of tast
+        | FACT of tast
         | INT of string
         | FLOAT of string
 

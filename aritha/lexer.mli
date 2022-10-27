@@ -11,6 +11,7 @@ type lexeme =
         | Add_float
         | Sub_float
         | Mul_float
+        | Fact
         | Int of string
         | Float of string
 
