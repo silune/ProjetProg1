@@ -34,4 +34,4 @@ clean:	clean_examples
 	rm -rf *.cmi *.cmo *.s *.log *.aux *.toc *.pdf *.exp aritha
 
 clean_examples:
-	rm -rf examples/*.s
+	rm -rf examples/*.s testInteger testFloat testBonus
