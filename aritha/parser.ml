@@ -16,7 +16,7 @@ type tast =
         | NEGI of tast
         | NEGF of tast
         | FACT of tast
-        | POWERI of tast * tast
+        | POWER of tast * tast
         | INT of string
         | FLOAT of string
 
@@ -29,6 +29,45 @@ let priorityMax = Array.length priorityOrder
 
 
 (* ----- Auxilary functions ----- *)
+
+(* -- get informations from lexeme lists -- *)
+
+(* says if a list of lexemes is just a number *)
+let type_number lexemeList =
+        match lexemeList with
+        | [Int _] | Add_int::[Int _] | Sub_int::[Int _]
+        | [Float _] | Add_int::[Float _] | Sub_int::[Float _] -> true
+        | _ -> false
+
+(* says if a lexeme is an operator  *)
+let type_operator lexeme =
+        let rec aux i =
+                if i >= priorityMax
+                        then false
+                        else (List.mem lexeme priorityOrder.(i)) || (aux (i + 1))
+        in aux 0
+
+(* gives the type of any tree, fail if the tree is not well typed *)
+let get_type tree =
+        let rec aux treeRec =
+                match treeRec with
+                | INTFUN t -> if aux t = "float" then "int" else failwith "float type expected in 'int' function"
+                | FLOATFUN t -> if aux t = "int" then "float" else failwith "int type expected in 'int' function" 
+                | ADDI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '+' operator" 
+                | SUBI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '-' operator" 
+                | MULI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '*' operator" 
+                | DIVI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '/' operator" 
+                | MODI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '%' operator"
+                | ADDF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '+.' operator" 
+                | SUBF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '-.' operator" 
+                | MULF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '*.' operator"
+                | FACT t -> if (aux t = "int") then "int" else failwith "int type expected with '!' operator"
+                | POWER (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '^' operator"
+                | INT x -> "int"
+                | FLOAT x -> "float"
+                | NEGI t -> "int"
+                | NEGF t -> "float"
+        in aux tree
 
 (* -- syntax verification functions -- *)
 
@@ -62,44 +101,8 @@ let verify_function lexemeList =
                 | [] -> failwith "unmatched parenthesis on some function"
         in aux lexemeList 0 0
 
-(* verifies if the tree is well typed *)
-let verify_type tree =
-        let rec aux treeRec =
-                match treeRec with
-                | INTFUN t -> if aux t = "float" then "int" else failwith "float type expected in 'int' function"
-                | FLOATFUN t -> if aux t = "int" then "float" else failwith "int type expected in 'int' function" 
-                | ADDI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '+' operator" 
-                | SUBI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '-' operator" 
-                | MULI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '*' operator" 
-                | DIVI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '/' operator" 
-                | MODI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '%' operator"
-                | ADDF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '+.' operator" 
-                | SUBF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '-.' operator" 
-                | MULF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '*.' operator"
-                | FACT t -> if (aux t = "int") then "int" else failwith "int type expected with '!' operator"
-                | POWERI (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '^' operator"
-                | INT x -> "int"
-                | FLOAT x -> "float"
-                | NEGI t -> "int"
-                | NEGF t -> "float"
-        in ignore (aux tree)
-
-(* -- get informations from lexeme lists -- *)
-
-(* says if a list of lexemes is just a number *)
-let type_number lexemeList =
-        match lexemeList with
-        | [Int _] | Add_int::[Int _] | Sub_int::[Int _]
-        | [Float _] | Add_int::[Float _] | Sub_int::[Float _] -> true
-        | _ -> false
-
-(* says if a lexeme is an operator  *)
-let type_operator lexeme =
-        let rec aux i =
-                if i >= priorityMax
-                        then false
-                        else (List.mem lexeme priorityOrder.(i)) || (aux (i + 1))
-        in aux 0
+(* verifies if a tree is well typed  *)
+let verify_type tree = ignore (get_type tree)
 
 (* -- extracts sub lists of lexeme lists -- *)
 
@@ -178,7 +181,7 @@ and run_tree priorityLevel rightTree operator lexemeList =
         | Float_fun -> run_with (FLOATFUN rightTree)
         | Int_fun -> run_with (INTFUN rightTree)
         | Fact -> run_with (FACT rightTree)
-        | Power -> run_with (POWERI (rightTree, build_left leftOperand))
+        | Power -> run_with (POWER (rightTree, build_left leftOperand))
         | _ -> failwith "not implemented yet"
                 
 (* ----- Main functions ----- *)
@@ -193,7 +196,7 @@ let syntax_analyser lexemeList =
 (* gives the type of a tast (using strings "int" and "float") *)
 let rec type_of_tast tree =
         match tree with
-        | INTFUN _ | ADDI _ | SUBI _ | MULI _ | DIVI _ | MODI _ | NEGI _ | INT _ | FACT _ | POWERI _ -> "int"
+        | INTFUN _ | ADDI _ | SUBI _ | MULI _ | DIVI _ | MODI _ | NEGI _ | INT _ | FACT _ | POWER _ -> "int"
         | _ -> "float"
 
 (* ----- Debug functions ----- *)

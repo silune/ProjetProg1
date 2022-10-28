@@ -27,7 +27,7 @@ let print_int_fun =
 let print_float_fun =
         label "print_float" ++
         movq (ilab "S_float") (reg rdi) ++
-        movq (imm 1) (reg rax) ++
+        movb (imm 1) (reg al) ++
         call "printf" ++
         movq (imm 0) (reg rax) ++
         ret
@@ -47,16 +47,16 @@ let print_fact_fun =
         movq (imm 1) (reg rax) ++
         ret
 
-(* label function to compute int power *)
-let print_power_int_fun =
-        label "power_int_fun" ++
+(* label function to compute power *)
+let print_power_fun =
+        label "power_fun" ++
         cmpq (imm 0) (reg rsi) ++
-        je "power_int_init" ++
+        je "power_init" ++
         decq (reg rsi) ++
-        call "power_int_fun" ++
+        call "power_fun" ++
         imulq (reg rdi) (reg rax) ++
         ret ++
-        label "power_int_init" ++
+        label "power_init" ++
         movq (imm 1) (reg rax) ++
         ret
 
@@ -82,7 +82,7 @@ let code_of_op op =
         | INTFUN _ -> (pop_float xmm0) ++ cvttsd2siq (reg xmm0) (reg rdi) ++ (push_int rdi)
         | FLOATFUN _ -> (pop_int rdi) ++ cvtsi2sdq (reg rdi) (reg xmm0) ++ (push_float xmm0)
         | FACT _ -> (pop_int rdi) ++ call "fact_fun" ++ (push_int rax)
-        | POWERI _ -> (pop_int rsi) ++ (pop_int rdi) ++ call "power_int_fun" ++ (push_int rax)
+        | POWER _ -> (pop_int rsi) ++ (pop_int rdi) ++ call "power_fun" ++ (push_int rax)
         | _ -> failwith "impossible !"
 
 (* convert a tree into code, create float's label numerated as ".LCxxx" *)
@@ -94,7 +94,7 @@ let rec code_of_tree tree floatCount floatLabel =
         | FLOAT x ->    (movsd (lab (".LC"^(string_of_int floatCount))) (reg xmm0) ++ (push_float xmm0),
                         floatCount + 1,
                         floatLabel ++ label (".LC"^(string_of_int floatCount)) ++ double (float_of_string x))
-        | ADDI (t1, t2) | SUBI (t1, t2) | MULI (t1, t2) | DIVI (t1, t2) | MODI (t1, t2) | POWERI (t1, t2)
+        | ADDI (t1, t2) | SUBI (t1, t2) | MULI (t1, t2) | DIVI (t1, t2) | MODI (t1, t2) | POWER (t1, t2)
         | ADDF (t1, t2) | SUBF (t1, t2) | MULF (t1, t2) -> 
                 let (subCode1, subFloatCount1, subFloatLabel1) = (code_of_tree t1 floatCount floatLabel) in
                 let (subCode2, subFloatCount2, subFloatLabel2) = (code_of_tree t2 subFloatCount1 subFloatLabel1) in
@@ -124,7 +124,7 @@ let assembly_of_tree tree =
                 codeTree ++
                 (print_res tree) ++
                 (print_fact_fun) ++
-                (print_power_int_fun);
+                (print_power_fun);
                 data =
                         label "S_int" ++ string "%d \n" ++
                         label "S_float" ++ string "%f \n" ++ 
