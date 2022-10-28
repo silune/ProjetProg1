@@ -130,4 +130,32 @@ let lexical_analyser stringExp =
                 then failwith "empty file"
                 else aux 1 (string_of_char (stringExpS.[0]))
 
+(* ----- Debug functions ----- *)
+
+let string_of_lexeme lexeme =
+        match lexeme with
+        | L_bra -> "L_bra"
+        | R_bra -> "R_bra"
+        | Int_fun -> "Int_fun"
+        | Float_fun -> "Float_fun"
+        | Add_int -> "Add_int"
+        | Sub_int -> "Sub_int"
+        | Mul_int -> "Mul_int"
+        | Div -> "Div"
+        | Mod -> "Mod"
+        | Add_float -> "Add_float"
+        | Sub_float -> "Sub_float"
+        | Mul_float -> "Mul_float"
+        | Fact -> "Fact"
+        | Power -> "Power"
+        | Int x -> "Int " ^ x
+        | Float x -> "Float " ^ x
+
+let print_list_lexeme lstlexeme =
+        let rec aux lst =
+                match lst with
+                | [] -> "]\n"
+                | t::q -> (string_of_lexeme t) ^ "; " ^ (aux q)
+        in print_string ("[" ^ aux lstlexeme)
+
 

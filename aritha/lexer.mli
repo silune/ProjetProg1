@@ -17,3 +17,4 @@ type lexeme =
         | Float of string
 
 val lexical_analyser: string -> lexeme list
+val print_list_lexeme: lexeme list -> unit

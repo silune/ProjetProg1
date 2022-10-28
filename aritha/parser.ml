@@ -23,7 +23,7 @@ type tast =
 (* Priority Order definition *)
 let priorityOrder = [|  [Add_int; Sub_int; Add_float; Sub_float];
                         [Mul_int; Div; Mod; Mul_float];
-                        [Int_fun; Float_fun; Fact; Power]|]
+                        [Fact; Power]|]
 
 let priorityMax = Array.length priorityOrder
 
@@ -46,6 +46,11 @@ let type_operator lexeme =
                         then false
                         else (List.mem lexeme priorityOrder.(i)) || (aux (i + 1))
         in aux 0
+
+let type_function lexeme =
+        match lexeme with
+        | Int_fun | Float_fun | Add_int | Sub_int -> true
+        | _ -> false
 
 (* gives the type of any tree, fail if the tree is not well typed *)
 let get_type tree =
@@ -106,24 +111,33 @@ let verify_type tree = ignore (get_type tree)
 
 (* -- extracts sub lists of lexeme lists -- *)
 
+(* get the triplet (see below) assuming le list is just a function *)
+let get_function_operation lexemeList =
+        match lexemeList with
+        | [] -> (None, [], [])
+        | t::q when type_function t -> (Some t, q, [])
+        | t::q -> (None, lexemeList, [])
+
 (* get the triplet (next operator, next operand, rest of the list) of the lexeme list
         - next operator is the first (from right to left) that respect priority level and bracket level
         - next operand is the lexeme list of - the operand if unary operator, - the right operand if binary operator (for assiociativity)
         - rest of the list is all the list of all orther lexemes, some might be ignored if the expression is not valid *)
 let next_operation priorityLevel lexemeList =
-        let operatorLexemeList = priorityOrder.(priorityLevel) in
-        let rec aux lst braCount isUnary =
-                match lst with
-                | L_bra::q -> let (operator, operand, rest) = aux q (braCount + 1) true in (operator, L_bra::operand, rest)
-                | R_bra::q -> let (operator, operand, rest) = aux q (braCount - 1) false in (operator, R_bra::operand, rest)
-                | t::q when (t = Add_int || t = Sub_int) && isUnary ->
-                                let (operator, operand, rest) = aux q braCount false in (operator, t::operand, rest)
-                | t::q when (t = Int_fun || t = Float_fun) && (List.mem t operatorLexemeList) && (braCount = 0) -> (Some t, q, [])
-                | t::q when (List.mem t operatorLexemeList) && (braCount = 0) -> (Some t, [], q)
-                | t::q when (type_operator t) -> let (operator, operand, rest) = aux q braCount true in (operator, t::operand, rest)
-                | t::q -> let (operator, operand, rest) = aux q braCount false in (operator, t::operand, rest)
-                | _ -> (None, [], [])
-        in aux lexemeList 0 true
+        if priorityLevel >= priorityMax
+                then get_function_operation lexemeList
+                else let operatorLexemeList = priorityOrder.(priorityLevel) in
+                        let rec aux lst braCount isUnary =
+                                match lst with
+                                | L_bra::q -> let (operator, operand, rest) = aux q (braCount + 1) true in (operator, L_bra::operand, rest)
+                                | R_bra::q -> let (operator, operand, rest) = aux q (braCount - 1) false in (operator, R_bra::operand, rest)
+                                | t::q when (t = Add_int || t = Sub_int) && isUnary -> 
+                                                let (operator, operand, rest) = aux q braCount false in (operator, t::operand, rest)
+                                | t::q when (List.mem t operatorLexemeList) && (braCount = 0) -> (Some t, [], q)
+                                | t::q when (type_operator t) && (t <> Fact) ->
+                                                let (operator, operand, rest) = aux q braCount true in (operator, t::operand, rest)
+                                | t::q -> let (operator, operand, rest) = aux q braCount false in (operator, t::operand, rest)
+                                | _ -> (None, [], [])
+                        in aux lexemeList 0 true
 
 
 (* get the lexemes inside parenthesis, fail if the first and last elements are not parenthesis *)
@@ -152,7 +166,7 @@ let number_tree lexemeList =
 let rec build_tree priorityLevel lexemeList =
         if type_number lexemeList
                 then number_tree lexemeList
-                else if priorityLevel >= priorityMax
+                else if priorityLevel > priorityMax
                         then let noBraLexemeList = remove_bra lexemeList in
                                 if noBraLexemeList = lexemeList
                                         then failwith "unable to execute expression"
@@ -170,7 +184,11 @@ and run_tree priorityLevel rightTree operator lexemeList =
                                 then newTree
                                 else run_tree priorityLevel newTree (Option.get nextOperator) nextRest) in
         match operator with
+        | Add_int when priorityLevel = priorityMax -> run_with rightTree
         | Add_int -> run_with (ADDI (rightTree, build_left leftOperand))
+        | Sub_int when priorityLevel = priorityMax -> if (get_type rightTree) = "int"
+                                                                then run_with (NEGI (rightTree))
+                                                                else run_with (NEGF (rightTree))
         | Sub_int -> run_with (SUBI (rightTree, build_left leftOperand))
         | Mul_int -> run_with (MULI (rightTree, build_left leftOperand))
         | Div -> run_with (DIVI (rightTree, build_left leftOperand))
@@ -198,33 +216,4 @@ let rec type_of_tast tree =
         match tree with
         | INTFUN _ | ADDI _ | SUBI _ | MULI _ | DIVI _ | MODI _ | NEGI _ | INT _ | FACT _ | POWER _ -> "int"
         | _ -> "float"
-
-(* ----- Debug functions ----- *)
-
-let string_of_lexeme lexeme =
-        match lexeme with
-        | L_bra -> "L_bra"
-        | R_bra -> "R_bra"
-        | Int_fun -> "Int_fun"
-        | Float_fun -> "Float_fun"
-        | Add_int -> "Add_int"
-        | Sub_int -> "Sub_int"
-        | Mul_int -> "Mul_int"
-        | Div -> "Div"
-        | Mod -> "Mod"
-        | Add_float -> "Add_float"
-        | Sub_float -> "Sub_float"
-        | Mul_float -> "Mul_float"
-        | Fact -> "Fact"
-        | Power -> "Power"
-        | Int x -> "Int " ^ x
-        | Float x -> "Float " ^ x
-
-let print_list_lexeme lstlexeme =
-        let rec aux lst =
-                match lst with
-                | [] -> "]\n"
-                | t::q -> (string_of_lexeme t) ^ "; " ^ (aux q)
-        in print_string ("[" ^ aux lstlexeme)
-
 

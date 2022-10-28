@@ -1,3 +1,5 @@
+all:	aritha rapport examples
+
 aritha: x86_64 lexer parser compiler
 	ocamlc x86_64.cmo lexer.cmo parser.cmo compiler.cmo main.ml -o aritha
 
@@ -17,5 +19,19 @@ compiler: x86_64 parser
 	ocamlc -c x86_64.cmo parser.cmo compiler.mli
 	ocamlc -c x86_64.cmo parser.cmo compiler.ml
 
-clean:
-	rm -rf *.cmi *.cmo *.s aritha
+rapport:
+	pdflatex rapport.tex
+
+examples:
+	./aritha testInteger.exp
+	gcc -no-pie testIntger.s -o testInteger
+	./aritha testFloat.exp
+	gcc -no-pie testFloat.s -o testFloat
+	./aritha testBonus.exp
+	gcc -no-pie testBonus.s -o testBonus
+
+clean:	clean_examples
+	rm -rf *.cmi *.cmo *.s *.log *.aux *.toc *.pdf *.exp aritha
+
+clean_examples:
+	rm -rf examples/*.s
