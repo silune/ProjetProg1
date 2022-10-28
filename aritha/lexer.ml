@@ -56,6 +56,16 @@ let is_float str =
                         | a::b::[] -> (is_int a) && (is_int b)
                         | _ -> false;;
 
+(* checks if prefix is a prefix of str (stolen in String lib Ocaml 4.13) *)
+let starts_with prefix str =
+        let len_str = String.length str
+        and len_pref = String.length prefix in
+        let rec aux i =
+                if i = len_pref then true
+                else if str.[i] <> prefix.[i] then false
+                else aux (i + 1)
+        in len_str >= len_pref && aux 0
+
 (* -- String / Lexeme managment functions -- *)
 
 (* converts a string into an Option of lexeme if it represents a lexeme, in None in the other case *)
@@ -89,7 +99,7 @@ let is_a_lexeme_prefix str =
                         let rec aux lst =
                                 match lst with
                                 | [] -> false
-                                | t::q when (String.starts_with ~prefix:str t) -> true
+                                | t::q when (starts_with str t) -> true
                                 | t::q -> aux q
                         in aux lexeme_patterns;;
 

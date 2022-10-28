@@ -1,6 +1,7 @@
 (* Main : generate de .s file using a .exp file *)
 
 (* ----- Auxilary functions ----- *)
+
 (* compile the string in the .exp file and write it in the .s file *)
 let compile expString fileName =
         let lexemeList = Lexer.lexical_analyser expString in
