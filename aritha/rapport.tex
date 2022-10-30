@@ -1,0 +1,125 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[french]{babel}
+\usepackage{listings}
+\usepackage[T1]{fontenc}
+\usepackage{verbatim}
+\usepackage[margin=1.2in]{geometry}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\newcommand{\dd}{\text{d}•}
+
+\pagenumbering{arabic}
+
+\begin{document}
+
+
+\begin{titlepage}
+
+\vspace{1cm}
+
+	\begin{center}
+
+		\huge{\textbf{Compilateur d'expressions arithmétiques "\textit{aritha}"}}
+
+		\vspace{5mm} %espace vertical de 5mm
+
+		\begin{large}
+
+		Projet Prog 1
+
+		\vspace{5mm}
+
+		Simon Corbard
+
+		\end{large}
+
+	\end{center}
+
+\vfill
+
+\tableofcontents
+
+\end{titlepage}
+
+\section{Définitions / Choix}
+
+\subsection{Lexemes}
+
+Les lexemes sont définis par :
+
+
+\begin{verbatim}
+lexeme := | L_bra | R_bra | Int_fun | Float_fun
+          | Add_int | Sub_int | Mul_int | Div | Mod
+          | Add_float | Sub_float | Mul_float
+          | Int of string | Float of string
+\end{verbatim}
+
+J'ai fait le choix de différencier les valeurs numériques flottantes et entières au lieu d'utiliser un lexeme "\verb|Var of string|". Je n'ai pas differencié, dans le lexer, les opérateurs unaires "\verb|+|" et "\verb|-|" et les opérateurs binaires représentés par les même caractères. Je n'ai pas implémenter de lexeme "\verb|Function of string|" pour implémenter les fonctions \verb|int| et \verb|float| (ou possiblement d'autres) car cela rendais mon lexer plus complexe, ce qui n'est pas nécessaire pour la gestion des expressions regardées.\\
+Rq : Les fonctions \verb|int| et \verb|float| sont typées, en particulier \verb|int(0)| n'est pas valide.\\
+Rq : J'accèpte dans mon lexer les notations pour les flottants : \verb|4.| et \verb|.04|.
+
+\subsection{AST / TAST}
+
+Les arbres syntaxiques abstraits sont typés et définis par :
+
+\begin{verbatim}
+tast := | INTFUN of tast | FLOATFUN of tast
+        | ADDI of tast * tast | SUBI of tast * tast | MULI of tast * tast
+        | NEGI of tast | NEGF of tast
+        | DIVI of tast * tast | MODI of tast * tast
+        | ADDF of tast * tast | SUBF of tast * tast | MULF of tast * tast
+        | INT of string | FLOAT of string
+\end{verbatim}
+
+Le parseur transforme la liste de lexemes en arbre syntaxique, en respectant l'ordre de priorité : \verb|(float, int) -> (*, *., /, %) -> (+, +., -, -.)|. Le type est vérifié après génération de l'arbre par un deuxième parcours, et lors de la création des noeuds \verb|NEGI| et \verb|NEGF| dans lesquels le type deriere l'opération unaire est inféré. Sont aussi vérifiés à cette étape : le bon parenthèsage de l'expression et le bon appel des fonctions.
+
+\section{Problèmes rencontrés}
+
+\subsection{Gestion des flottants avec x86-64}
+
+Il n'y a pas, en x86-64, de fonction pour push le contenu d'un registre sur la pile, il a donc fallu le faire à la main : le registre \verb|%rsp| indique la position de la tête de la pile, on retire donc 8 octets au pointeur \verb|0(%rsp)| et on \verb|movq| le registre souhaité à cette adresse (et symétriquement pour pop un élément de la pile).
+
+Pour gérer la pile plus proprement, je déplace manuellement la base de la pile (dont l'adresse est stockée dans \verb|%rbp|) à la tête de la pile, de sorte à avoir une pile vide lors de l'execution de \verb|main|. A la fin de l'execution je repositionne la base et la tête sur leurs positions initiales afin que l'execution du programme n'est aucune influence sur la pile.
+
+\subsection{Division Euclidienne}
+
+Lors des test sur la division Euclidienne et le modulo sur des entiers négatifs, les résultats était incohérent. En réalité, \verb|idivq reg| réalise la division Euclidienne du registre \verb|reg| par \verb|%rdx::%rax|. Cependant il ne suffit pas de mettre \verb|$0| dans \verb|%rdx| et le dénominateur dans \verb|%rax| car le signe du denominateur (situé dans le bit le plus à gauche du registre) est perdu. La commande \verb|cqto| permet de faire la conversion, et réalise donc les divisions et modulo attendus en C.
+
+\subsection{Parser}
+
+Comme j'ai réalisé mon Parseur à la main, il était assez difficile de faire un parseur le plus général possible, notamment pour la gestion d'opérations unaires (\verb|+(exp)| et \verb|-(exp)|) et leurs distinctions avec les opérateurs binaires ou les constructions de constantes. Notamment mon premier parseur réalisait l'assosiativité à droite et j'ai du le repenser complètement pour la faire à gauche.
+
+\section{Bonus}
+
+\subsection{Autres opérateurs}
+
+J'ai ajouté les opérateurs : factorielle, puissance entière d'entiers, division de flottants. Représentés par les expressions respectivent : \verb|exp!|, \verb|exp^exp|, \verb|exp/.exp|. La nouvelle règle de priorité est donc :\\
+\verb|(float, int) -> (!, ^) -> (*, /, *., /., %) -> (+, +., -, -.)|
+
+En assembleur, la gestion des opérateurs factorielle et puissances nécessitent des appels de fonctions, ces fonctions sont donc inscrites en bas de chaques codes assembleurs renvoyés par \verb|aritha| mais il serrait plus satisfaisant qu'elle apparaissent seuelement si nécéssaire.
+
+\subsection{Générateur d'expressions arithmétiques}
+
+Dans le but de tester \verb|aritha| sur un plus grand nombre d'essais j'ai implémenter un générateur d'expressions arithmétiques valides qui produit un code Ocaml évaluant l'expression, et le fichier \verb|.exp| associé à l'expression.\\
+Rq: ces tests ne permettent pas de s'assurer que les expressions invalides sont bien rejettées par \verb|aritha|\\
+\noindent Utilisation:\\
+
+\noindent \verb|./randomExpGenerator fileName operationNumber typeReturned maximumConstant|\\
+
+\noindent fileName : nom des fichiers rendus en sortie\\
+operationNumber : nombre d'opérations utilisées dans l'expression\\
+typeReturned : int ou float\\
+maximumConstant : valeure maximum des constantes générées aléatoirement\\
+Rq : les deux derniers arguments sont optionels avec par défault : int 100\\
+Example d'utilisation réalisant les tests successifs de \verb|aritha| et le code Ocaml :
+\begin{verbatim}
+./randomExpGenerator testExp 10 int 10 &&
+ocamlc testExp.answer.ml -o testExp.answer && ./testExp.answer &&
+../aritha testExp.test.exp &&
+gcc -no-pie testExp.test.s -o testExp.test && ./testExp.test
+\end{verbatim}
+
+\end{document}

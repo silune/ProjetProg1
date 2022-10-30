@@ -1,7 +1,15 @@
 all:	aritha rapport
 
-aritha: x86_64 lexer parser compiler
+aritha: x86_64 lexer parser compiler #compile aritha
 	ocamlc x86_64.cmo lexer.cmo parser.cmo compiler.cmo main.ml -o aritha
+
+test: aritha testGenerator #compile some test
+	./aritha examples/testInteger.exp
+	gcc -no-pie examples/testInteger.s -o examples/testInteger
+	./aritha examples/testFloat.exp
+	gcc -no-pie examples/testFloat.s -o examples/testFloat
+	./aritha examples/testBonus.exp
+	gcc -no-pie examples/testBonus.s -o examples/testBonus
 
 x86_64:
 	ocamlc -c x86_64.mli
@@ -21,20 +29,13 @@ compiler: x86_64 parser
 
 rapport:
 	pdflatex rapport.tex
+	@pdflatex rapport.tex
 
-testGenerator:
+testGenerator: #compile the expression generator
 	ocamlc examples/randomExpGenerator.ml -o examples/randomExpGenerator
-
-test: aritha testGenerator
-	./aritha examples/testInteger.exp
-	gcc -no-pie examples/testInteger.s -o examples/testInteger
-	./aritha examples/testFloat.exp
-	gcc -no-pie examples/testFloat.s -o examples/testFloat
-	./aritha examples/testBonus.exp
-	gcc -no-pie examples/testBonus.s -o examples/testBonus
 
 clean:	clean_examples
 	rm -rf *.cmi *.cmo *.s *.log *.aux *.toc *.pdf *.exp aritha
 
-clean_examples:
+clean_examples: #clean the examples
 	rm -rf examples/*.s examples/testInteger examples/testFloat examples/testBonus examples/*.cmi examples/*.cmo examples/randomExpGenerator examples/*.test* examples/*.answer*
