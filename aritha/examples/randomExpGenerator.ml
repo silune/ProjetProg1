@@ -45,9 +45,9 @@ let rec aux resType opCount maxVal =
                                 | k when k <= 3 -> let (resExp, resMl) = aux "int" (opCount - 1) maxVal in
                                                         make_int_exp (resExp, resMl) ("", "") i
                                 | _ -> if opCount > 1 
-                                                then let cut = Random.int (opCount - 1) in
-                                                        let (res1Exp, res1Ml) = aux "int" (1 + opCount - cut) maxVal in
-                                                        let (res2Exp, res2Ml) = aux "int" (1 + cut) maxVal in
+                                                then let cut = Random.int (opCount) in
+                                                        let (res1Exp, res1Ml) = aux "int" (opCount - 1 - cut) maxVal in
+                                                        let (res2Exp, res2Ml) = aux "int" (cut) maxVal in
                                                         make_int_exp (res1Exp, res1Ml) (res2Exp, res2Ml) i
                                                 else aux resType opCount maxVal)
                         else let i = Random.int 8 in
@@ -58,8 +58,8 @@ let rec aux resType opCount maxVal =
                                                         make_float_exp (resExp, resMl) ("", "") i
                                 | _ -> if opCount > 1
                                                 then let cut = Random.int (opCount - 1) in
-                                                        let (res1Exp, res1Ml) = aux "float" (opCount - cut - 1) maxVal in
-                                                        let (res2Exp, res2Ml) = aux "float" (1 + cut) maxVal in
+                                                        let (res1Exp, res1Ml) = aux "float" (opCount - 1 - cut) maxVal in
+                                                        let (res2Exp, res2Ml) = aux "float" (cut) maxVal in
                                                         make_float_exp (res1Exp, res1Ml) (res2Exp, res2Ml) i
                                                 else aux resType opCount maxVal)
 
