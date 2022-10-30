@@ -204,6 +204,7 @@ let mulsd a b = ins "mulsd \t%a, %a" a () b ()
 
 let idivq a = ins "idivq \t%a" a ()
 let cqto = S "\tcqto\n"
+let divsd a b = ins "divsd \t%a, %a" a () b ()
 
 let notb a = ins "notb \t%a" a ()
 let notw a = ins "notw \t%a" a ()

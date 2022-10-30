@@ -78,6 +78,7 @@ let code_of_op op =
         | ADDF _ -> (pop_float xmm1) ++ (pop_float xmm0) ++ addsd (reg xmm1) (reg xmm0) ++ (push_float xmm0)
         | SUBF _ -> (pop_float xmm1) ++ (pop_float xmm0) ++ subsd (reg xmm1) (reg xmm0) ++ (push_float xmm0)
         | MULF _ -> (pop_float xmm1) ++ (pop_float xmm0) ++ mulsd (reg xmm1) (reg xmm0) ++ (push_float xmm0)
+        | DIVF _ -> (pop_float xmm1) ++ (pop_float xmm0) ++ divsd (reg xmm1) (reg xmm0) ++ (push_float xmm0)
         | NEGF _ -> (pop_float xmm0) ++ xorpd (reg xmm1) (reg xmm1) ++ subsd (reg xmm0) (reg xmm1) ++ (push_float xmm1)
         | INTFUN _ -> (pop_float xmm0) ++ cvttsd2siq (reg xmm0) (reg rdi) ++ (push_int rdi)
         | FLOATFUN _ -> (pop_int rdi) ++ cvtsi2sdq (reg rdi) (reg xmm0) ++ (push_float xmm0)
@@ -95,7 +96,7 @@ let rec code_of_tree tree floatCount floatLabel =
                         floatCount + 1,
                         floatLabel ++ label (".LC"^(string_of_int floatCount)) ++ double (float_of_string x))
         | ADDI (t1, t2) | SUBI (t1, t2) | MULI (t1, t2) | DIVI (t1, t2) | MODI (t1, t2) | POWER (t1, t2)
-        | ADDF (t1, t2) | SUBF (t1, t2) | MULF (t1, t2) -> 
+        | ADDF (t1, t2) | SUBF (t1, t2) | MULF (t1, t2) | DIVF (t1, t2) -> 
                 let (subCode1, subFloatCount1, subFloatLabel1) = (code_of_tree t1 floatCount floatLabel) in
                 let (subCode2, subFloatCount2, subFloatLabel2) = (code_of_tree t2 subFloatCount1 subFloatLabel1) in
                         (subCode1 ++ subCode2 ++ (code_of_op tree),

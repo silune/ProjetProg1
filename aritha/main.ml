@@ -23,7 +23,7 @@ let () =
                 then failwith "give some .exp file"
                 else
                         let file = Sys.argv.(1) in
-                        let fileName = (String.sub file 0 (String.index file '.')) in
+                        let fileName = (String.sub file 0 (String.rindex file '.')) in
                         if (fileName ^ ".exp") <> file (* if the file is not a .exp file *)
                                 then failwith "give some .exp file"
                                 else let fileInput = open_in file in compile (read_file fileInput) fileName;;

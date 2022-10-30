@@ -232,6 +232,7 @@ val mulsd: [`Q] operand -> [`Q] operand -> text
 
 val idivq: [`Q] operand -> text
 val cqto: text
+val divsd: [`Q] operand -> [`Q] operand -> text
 
 (** {2 Opérations logiques } *)
 

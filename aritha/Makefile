@@ -22,7 +22,10 @@ compiler: x86_64 parser
 rapport:
 	pdflatex rapport.tex
 
-test: aritha
+testGenerator:
+	ocamlc examples/randomExpGenerator.ml -o examples/randomExpGenerator
+
+test: aritha testGenerator
 	./aritha examples/testInteger.exp
 	gcc -no-pie examples/testInteger.s -o examples/testInteger
 	./aritha examples/testFloat.exp
@@ -34,4 +37,4 @@ clean:	clean_examples
 	rm -rf *.cmi *.cmo *.s *.log *.aux *.toc *.pdf *.exp aritha
 
 clean_examples:
-	rm -rf examples/*.s testInteger testFloat testBonus
+	rm -rf examples/*.s examples/testInteger examples/testFloat examples/testBonus examples/*.cmi examples/*.cmo examples/randomExpGenerator examples/*.test* examples/*.answer*

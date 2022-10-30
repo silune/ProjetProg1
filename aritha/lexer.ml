@@ -9,11 +9,12 @@ type lexeme =
         | Add_int
         | Sub_int
         | Mul_int
-        | Div
+        | Div_int
         | Mod
         | Add_float
         | Sub_float
         | Mul_float
+        | Div_float
         | Fact
         | Power
         | Int of string
@@ -78,11 +79,12 @@ let string_to_lexeme str =
         | "+" -> Some Add_int
         | "-" -> Some Sub_int
         | "*" -> Some Mul_int
-        | "/" -> Some Div
+        | "/" -> Some Div_int
         | "%" -> Some Mod
         | "+." -> Some Add_float
         | "-." -> Some Sub_float
         | "*." -> Some Mul_float
+        | "/." -> Some Div_float
         | "!" -> Some Fact
         | "^" -> Some Power
         | _ -> if is_int str
@@ -95,7 +97,7 @@ let string_to_lexeme str =
 let is_a_lexeme_prefix str =
         if (is_float str) || (is_int str)
                 then true
-                else let lexeme_patterns = ["("; ")"; "int"; "float"; "+"; "-"; "*"; "+."; "-."; "*."; "!"; "^"] in
+                else let lexeme_patterns = ["("; ")"; "int"; "float"; "+"; "-"; "*"; "+."; "-."; "*."; "/.";  "!"; "^"] in
                         let rec aux lst =
                                 match lst with
                                 | [] -> false
@@ -141,11 +143,12 @@ let string_of_lexeme lexeme =
         | Add_int -> "Add_int"
         | Sub_int -> "Sub_int"
         | Mul_int -> "Mul_int"
-        | Div -> "Div"
+        | Div_int -> "Div_int"
         | Mod -> "Mod"
         | Add_float -> "Add_float"
         | Sub_float -> "Sub_float"
         | Mul_float -> "Mul_float"
+        | Div_float -> "Div_float"
         | Fact -> "Fact"
         | Power -> "Power"
         | Int x -> "Int " ^ x

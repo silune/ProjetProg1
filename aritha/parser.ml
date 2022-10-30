@@ -13,6 +13,7 @@ type tast =
         | ADDF of tast * tast
         | SUBF of tast * tast
         | MULF of tast * tast
+        | DIVF of tast * tast
         | NEGI of tast
         | NEGF of tast
         | FACT of tast
@@ -22,7 +23,7 @@ type tast =
 
 (* Priority Order definition *)
 let priorityOrder = [|  [Add_int; Sub_int; Add_float; Sub_float];
-                        [Mul_int; Div; Mod; Mul_float];
+                        [Mul_int; Div_int; Mod; Mul_float; Div_float];
                         [Fact; Power]|]
 
 let priorityMax = Array.length priorityOrder
@@ -66,6 +67,7 @@ let get_type tree =
                 | ADDF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '+.' operator" 
                 | SUBF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '-.' operator" 
                 | MULF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '*.' operator"
+                | DIVF (t1, t2) -> if (aux t1 = "float") && (aux t2 = "float") then "float" else failwith "float type expected with '/.' operator"
                 | FACT t -> if (aux t = "int") then "int" else failwith "int type expected with '!' operator"
                 | POWER (t1, t2) -> if (aux t1 = "int") && (aux t2 = "int") then "int" else failwith "int type expected with '^' operator"
                 | INT x -> "int"
@@ -191,11 +193,12 @@ and run_tree priorityLevel rightTree operator lexemeList =
                                                                 else run_with (NEGF (rightTree))
         | Sub_int -> run_with (SUBI (rightTree, build_left leftOperand))
         | Mul_int -> run_with (MULI (rightTree, build_left leftOperand))
-        | Div -> run_with (DIVI (rightTree, build_left leftOperand))
+        | Div_int -> run_with (DIVI (rightTree, build_left leftOperand))
         | Mod -> run_with (MODI (rightTree, build_left leftOperand))
         | Add_float -> run_with (ADDF (rightTree, build_left leftOperand))
         | Sub_float -> run_with (SUBF (rightTree, build_left leftOperand))
         | Mul_float -> run_with (MULF (rightTree, build_left leftOperand))
+        | Div_float -> run_with (DIVF (rightTree, build_left leftOperand))
         | Float_fun -> run_with (FLOATFUN rightTree)
         | Int_fun -> run_with (INTFUN rightTree)
         | Fact -> run_with (FACT rightTree)

@@ -6,11 +6,12 @@ type lexeme =
         | Add_int
         | Sub_int
         | Mul_int
-        | Div
+        | Div_int
         | Mod
         | Add_float
         | Sub_float
         | Mul_float
+        | Div_float
         | Fact
         | Power
         | Int of string

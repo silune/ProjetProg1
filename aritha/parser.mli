@@ -11,6 +11,7 @@ type tast =
         | ADDF of tast * tast
         | SUBF of tast * tast
         | MULF of tast * tast
+        | DIVF of tast * tast
         | NEGI of tast
         | NEGF of tast
         | FACT of tast
